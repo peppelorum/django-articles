@@ -153,7 +153,7 @@ MARKUP_HELP = _("""Select the type of markup you are using in this article.
 
 class Article(models.Model):
     title = models.CharField(max_length=100)
-    slug = models.SlugField(unique_for_year='publish_date')
+    slug = models.SlugField(unique=True)
     status = models.ForeignKey(ArticleStatus, default=ArticleStatus.objects.default)
     author = models.ForeignKey(User)
     sites = models.ManyToManyField(Site, blank=True)
@@ -423,7 +423,7 @@ class Article(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('articles_display_article', (self.publish_date.year, self.slug))
+        return ('articles_display_article', (self.slug))
 
     def _get_teaser(self):
         """

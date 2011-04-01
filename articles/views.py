@@ -65,11 +65,11 @@ def display_blog_page(request, tag=None, username=None, year=None, month=None, p
 
     return response
 
-def display_article(request, year, slug, template='articles/article_detail.html'):
+def display_article(request, slug, template='articles/article_detail.html'):
     """Displays a single article."""
 
     try:
-        article = Article.objects.live(user=request.user).get(publish_date__year=year, slug=slug)
+        article = Article.objects.live(user=request.user).get(slug=slug)
     except Article.DoesNotExist:
         raise Http404
 
