@@ -77,8 +77,6 @@ def display_article(request, slug, template='articles/article_detail.html'):
     if article.login_required and not request.user.is_authenticated():
         return HttpResponseRedirect(reverse('auth_login') + '?next=' + request.path)
 
-    print "dev", getattr(settings, 'DISQUS_DEV', 0)
-
     variables = RequestContext(request, {
         'article': article,
         'disqus_forum': getattr(settings, 'DISQUS_FORUM_SHORTNAME', None),
