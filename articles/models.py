@@ -205,18 +205,40 @@ class Article(models.Model):
     def __unicode__(self):
         return self.title
 
+
+
     def save(self, *args, **kwargs):
         """
         Renders the article using the appropriate markup language.
         """
         using = kwargs.get('using', DEFAULT_DB)
 
+        if not self.slug:
+            self.slug = slugify(self.name)  # Where self.name is the field used for 'pre-populate from'
+
         self.do_render_markup()
         self.do_addthis_button()
         self.do_meta_description()
         self.do_unique_slug(using)
 
-        super(Article, self).save(*args, **kwargs)
+
+        while True:
+            try:
+                super(Article, self).save()
+                # Assuming the IntegrityError is due to a slug fight
+            except IntegrityError:
+                match_obj = re.match(r'^(.*)-(\d+)$', self.slug)
+                if match_obj:
+                    next_int = int(match_obj.group(2)) + 1
+                    self.slug = match_obj.group(1) + '-' + str(next_int)
+                else:
+                    self.slug += '-2'
+            else:
+                break
+
+
+
+#        super(Article, self).save(*args, **kwargs)
 
         # do some things that require an ID first
         requires_save = self.do_auto_tag(using)
@@ -423,7 +445,7 @@ class Article(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('articles_display_article', (self.slug))
+        return ('articles_display_article',(), {'slug': self.slug})
 
     def _get_teaser(self):
         """
