@@ -343,6 +343,13 @@ class Article(models.Model):
 
         return found
 
+    def attachment_images(self):
+        return Attachment.objects.filter(article=self, image=True)
+
+    def attachment_non_images(self):
+        return Attachment.objects.filter(article=self).exclude(content_type__contains='image')
+        
+
     def do_default_site(self, using=DEFAULT_DB):
         """
         If no site was selected, selects the site used to create the article
@@ -494,15 +501,36 @@ class Article(models.Model):
     class Meta:
         ordering = ('-publish_date', 'title')
 
+
+def get_filter_manager(*args, **kwargs):
+    class FilterManager(models.Manager):
+        "Custom manager filters standard query set with given args."
+        def get_query_set(self):
+            return super(FilterManager, self).get_query_set().filter(*args, **kwargs)
+    return FilterManager()
+
 class Attachment(models.Model):
     upload_to = lambda inst, fn: 'attach/%s/%s/%s' % (datetime.now().year, inst.article.slug, fn)
 
     article = models.ForeignKey(Article, related_name='attachments')
     attachment = models.FileField(upload_to=upload_to)
     caption = models.CharField(max_length=255, blank=True)
+    content_type = models.CharField(max_length=50, blank=True)
+
+    image = models.BooleanField(default=False)
+
+    # images = AttachmentManagerImages()
+    objects = get_filter_manager()
+    images = get_filter_manager(image=True)
 
     class Meta:
         ordering = ('-article', 'id')
+
+    def save(self, *args, **kwargs):
+
+        # if 'image_jpeg' in self.content_type_class:
+        self.content_type = self.content_type_class
+        super(Attachment, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return u'%s: %s' % (self.article, self.caption)
