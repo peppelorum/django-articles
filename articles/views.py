@@ -5,6 +5,7 @@ from django.core.paginator import Paginator, EmptyPage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponsePermanentRedirect, Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib.sites.models import Site
 from django.template import RequestContext
 from articles.models import Article, Tag
 from datetime import datetime
@@ -50,6 +51,8 @@ def display_blog_page(request, tag=None, username=None, year=None, month=None, p
         articles = Article.objects.live(user=request.user)
         template = 'articles/article_list.html'
 
+    page = request.GET.get('page', 1)
+
     # paginate the articles
     paginator = Paginator(articles, ARTICLE_PAGINATION,
                           orphans=int(ARTICLE_PAGINATION / 4))
@@ -68,6 +71,15 @@ def display_blog_page(request, tag=None, username=None, year=None, month=None, p
 def display_article(request, slug, template='articles/article_detail.html'):
     """Displays a single article."""
 
+
+#    obj = MyModel.objects.get(id=3)
+#    obj.get_absolute_url()
+#    '/mymodel/objects/3/'
+#    Site.objects.get_current().domain
+#    'example.com'
+#    'http://%s%s' % (Site.objects.get_current().domain, obj.get_absolute_url())
+#    'http://example.com/mymodel/objects/3/'
+
     try:
         article = Article.objects.live(user=request.user).get(slug=slug)
     except Article.DoesNotExist:
@@ -79,6 +91,7 @@ def display_article(request, slug, template='articles/article_detail.html'):
 
     variables = RequestContext(request, {
         'article': article,
+        'url':  'http://%s%s' % (Site.objects.get_current().domain, article.get_absolute_url()),
         'disqus_forum': getattr(settings, 'DISQUS_FORUM_SHORTNAME', None),
         'disqus_dev': getattr(settings, 'DISQUS_DEV', 0),
 

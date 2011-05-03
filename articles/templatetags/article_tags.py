@@ -134,6 +134,7 @@ class GetArticleArchivesNode(template.Node):
                 # make sure we know that we have an article posted in this month/year
                 archives[pub.year][pub.month] = True
 
+
             dt_archives = []
 
             # now sort the years, so they don't appear randomly on the page
@@ -150,13 +151,13 @@ class GetArticleArchivesNode(template.Node):
                 m.sort()
 
                 # now create a list of datetime objects for each month/year
-                months = [datetime(year, month, 1) for month in m]
+                months = [(datetime(year, month, 1), Article.objects.filter(status__is_live=True, publish_date__year=year, publish_date__month=month).count()) for month in m]
 
                 # append this list to our final collection
-                dt_archives.append( ( year, tuple(months) ) )
+                dt_archives.append( ( year, tuple(months), Article.objects.filter(status__is_live=True, publish_date__year=year).count() ) )
 
             cache.set(cache_key, dt_archives)
-
+            
         # put our collection into the context
         context[self.varname] = dt_archives
         return ''
