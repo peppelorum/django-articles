@@ -344,7 +344,7 @@ class Article(models.Model):
         return found
 
     def attachment_images(self):
-        return Attachment.objects.filter(article=self, image=True)
+        return Attachment.objects.filter(article=self, content_type__contains='image')
 
     def attachment_non_images(self):
         return Attachment.objects.filter(article=self).exclude(content_type__contains='image')
@@ -513,7 +513,7 @@ class Attachment(models.Model):
     upload_to = lambda inst, fn: 'attach/%s/%s/%s' % (datetime.now().year, inst.article.slug, fn)
 
     article = models.ForeignKey(Article, related_name='attachments')
-    attachment = models.FileField(upload_to=upload_to)
+    attachment = models.FileField(upload_to=upload_to, max_length=255)
     caption = models.CharField(max_length=255, blank=True)
     content_type = models.CharField(max_length=50, blank=True)
 
@@ -521,7 +521,7 @@ class Attachment(models.Model):
 
     # images = AttachmentManagerImages()
     objects = get_filter_manager()
-    images = get_filter_manager(image=True)
+    images = get_filter_manager(content_type='image_jpeg')
 
     class Meta:
         ordering = ('-article', 'id')
