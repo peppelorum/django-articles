@@ -22,7 +22,7 @@ urlpatterns += patterns('',
 
     url(r'^tag/(?P<tag>.*)/page/(?P<page>\d+)/$', views.display_blog_page, name='articles_display_tag_page'),
     url(r'^tag/(?P<tag>.*)/$', views.display_blog_page, name='articles_display_tag'),
-
+    
     url(r'^author/(?P<username>.*)/page/(?P<page>\d+)/$', views.display_blog_page, name='articles_by_author_page'),
     url(r'^author/(?P<username>.*)/$', views.display_blog_page, name='articles_by_author'),
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.conf import settings
 from django.contrib.comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
@@ -10,6 +12,9 @@ import string
 import sys
 import urllib
 import urllib2
+
+import random
+import string
 
 NONPRINTABLE_RE = re.compile('[^%s]' % string.printable)
 
@@ -49,6 +54,7 @@ class Command(NoArgsCommand):
             handle = urllib2.urlopen(url, data)
         except urllib2.HTTPError, err:
             print 'Failed to %s %s with args %s' % (method, url, args)
+            print err
             return None
         else:
             json_obj = json.loads(handle.read())['message']
@@ -93,6 +99,8 @@ class Command(NoArgsCommand):
             article = comment.content_object
             thread_obj = self.get_value_from_api('thread_by_identifier', {'identifier': article.id, 'title': article.title, 'forum_api_key': self.forum_api_key}, method='POST')
 
+            print "thread_obj", thread_obj
+
             thread = thread_obj['thread']
             if thread_obj['created']:
                 # set the URL for this thread for good measure
@@ -100,25 +108,33 @@ class Command(NoArgsCommand):
                     'forum_api_key': self.forum_api_key,
                     'thread_id': thread['id'],
                     'title': article.title,
-                    'url': 'http://%s%s' % (Site.objects.get_current().domain, article.get_absolute_url()),
+                    'url': 'http://%s%s' % ('p.bergqvi.st/', article.get_absolute_url()),
                 }, method='POST')
                 print 'Created new thread for %s' % article.title
 
             # create the comment on disqus
+            email = comment.user_email
+            if email == '':
+                email = ''.join(random.choice(string.letters) for i in xrange(10))
+            name = comment.user_name
+            if name == '':
+                name = 'Anonym'
             comment_obj = self.get_value_from_api('create_post', {
                 'thread_id': thread['id'],
-                'message': comment.comment,
-                'author_name': comment.user_name,
-                'author_email': comment.user_email,
+                'message': comment.comment.encode('utf-8'),
+                'author_name': name,
+                'author_email': email,
                 'forum_api_key': self.forum_api_key,
                 'created_at': comment.submit_date.strftime('%Y-%m-%dT%H:%M'),
-                'ip_address': comment.ip_address,
+                'ip_address': '10.0.0.1',
                 'author_url': comment.user_url,
                 'state': self.get_state(comment)
             }, method='POST')
 
-            print 'Imported comment for %s by %s on %s' % (article, comment.user_name, comment.submit_date)
+            print 'Imported comment for %s by %s on %s' % (unicode(article), unicode(comment.user_name), comment.submit_date)
+            print unicode(comment.comment)
 
+#            print article
     def get_state(self, comment):
         """Determines a comment's state on Disqus based on its properties in Django"""
 

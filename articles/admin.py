@@ -16,6 +16,7 @@ class AttachmentInline(admin.TabularInline):
     max_num = 15
 
 class ArticleAdmin(admin.ModelAdmin):
+#    change_form_template = 'articles/admin/change_form.html'
     list_display = ('title', 'status', 'author', 'publish_date', 'expiration_date', 'is_active')
     list_filter = ('author', 'status', 'is_active', 'publish_date', 'expiration_date', 'sites')
     list_per_page = 25
@@ -88,7 +89,7 @@ class ArticleAdmin(admin.ModelAdmin):
         obj.save()
 
         # this requires an Article object already
-        obj.do_auto_tag('default')
+#        obj.do_auto_tag('default')
         form.cleaned_data['tags'] += list(obj.tags.all())
 
     def queryset(self, request):

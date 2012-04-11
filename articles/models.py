@@ -216,38 +216,38 @@ class Article(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)  # Where self.name is the field used for 'pre-populate from'
 
-        self.do_render_markup()
-        self.do_addthis_button()
-        self.do_meta_description()
-        self.do_unique_slug(using)
+#        self.do_render_markup()
+#        self.do_addthis_button()
+#        self.do_meta_description()
+#        self.do_unique_slug(using)
 
 
-        while True:
-            try:
-                super(Article, self).save()
-                # Assuming the IntegrityError is due to a slug fight
-            except IntegrityError:
-                match_obj = re.match(r'^(.*)-(\d+)$', self.slug)
-                if match_obj:
-                    next_int = int(match_obj.group(2)) + 1
-                    self.slug = match_obj.group(1) + '-' + str(next_int)
-                else:
-                    self.slug += '-2'
-            else:
-                break
+#        while True:
+#            try:
+#                super(Article, self).save()
+#                # Assuming the IntegrityError is due to a slug fight
+#            except IntegrityError:
+#                match_obj = re.match(r'^(.*)-(\d+)$', self.slug)
+#                if match_obj:
+#                    next_int = int(match_obj.group(2)) + 1
+#                    self.slug = match_obj.group(1) + '-' + str(next_int)
+#                else:
+#                    self.slug += '-2'
+#            else:
+#                break
 
 
 
 #        super(Article, self).save(*args, **kwargs)
 
         # do some things that require an ID first
-        requires_save = self.do_auto_tag(using)
-        requires_save |= self.do_tags_to_keywords()
-        requires_save |= self.do_default_site(using)
+#        requires_save = self.do_auto_tag(using)
+#        requires_save |= self.do_tags_to_keywords()
+#        requires_save |= self.do_default_site(using)
 
-        if requires_save:
+#        if requires_save:
             # bypass the other processing
-            super(Article, self).save()
+        super(Article, self).save()
 
     def do_render_markup(self):
         """Turns any markup into HTML"""
@@ -264,16 +264,6 @@ class Article(models.Model):
 
         return (self.rendered_content != original)
 
-    def do_addthis_button(self):
-        """Sets the AddThis username for this post"""
-
-        # if the author wishes to have an "AddThis" button on this article,
-        # make sure we have a username to go along with it.
-        if self.use_addthis_button and self.addthis_use_author and not self.addthis_username:
-            self.addthis_username = self.author.username
-            return True
-
-        return False
 
     def do_unique_slug(self, using=DEFAULT_DB):
         """
@@ -317,31 +307,6 @@ class Article(models.Model):
 
         return False
 
-    def do_auto_tag(self, using=DEFAULT_DB):
-        """
-        Performs the auto-tagging work if necessary.
-
-        Returns True if an additional save is required, False otherwise.
-        """
-
-        found = False
-        if self.auto_tag:
-            # don't clobber any existing tags!
-            existing_ids = [t.id for t in self.tags.all()]
-
-            unused = Tag.objects.all()
-            if hasattr(unused, 'using'):
-                unused = unused.using(using)
-            unused = unused.exclude(id__in=existing_ids)
-
-            for tag in unused:
-                regex = re.compile(r'\b%s\b' % tag.name, re.I)
-                if regex.search(self.content) or regex.search(self.title) or \
-                   regex.search(self.description) or regex.search(self.keywords):
-                    self.tags.add(tag)
-                    found = True
-
-        return found
 
     def attachment_images(self):
         return Attachment.objects.filter(article=self, content_type__contains='image')
