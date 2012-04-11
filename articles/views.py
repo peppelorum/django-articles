@@ -62,7 +62,9 @@ def display_blog_page(request, tag=None, username=None, year=None, month=None, p
         raise Http404
 
     context.update({'paginator': paginator,
-                    'page_obj': page})
+                    'page_obj': page,
+                    'disqus_forum': getattr(settings, 'DISQUS_FORUM_SHORTNAME', None),
+                    'disqus_dev': getattr(settings, 'DISQUS_DEV', 0),})
     variables = RequestContext(request, context)
     response = render_to_response(template, variables)
 
