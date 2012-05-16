@@ -506,12 +506,12 @@ class Attachment(models.Model):
 
     @property
     def content_type_class(self):
-        mt = mimetypes.guess_type(self.attachment.path)[0]
-        if mt:
-            content_type = mt.replace('/', '_')
-        else:
+#        mt = mimetypes.guess_type(self.attachment.path)[0]
+#        if mt:
+#            content_type = mt.replace('/', '_')
+#        else:
             # assume everything else is text/plain
-            content_type = 'text_plain'
+        content_type = 'text_plain'
 
         return content_type
 
