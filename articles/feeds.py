@@ -16,7 +16,7 @@ class SiteMixin(object):
             try:
                 self._site = Site.objects.get_current()
             except AttributeError:
-                self._site = Site(domain='example.com', name='Demo Site')
+                self._site = Site(domain='p.bergqvi.st', name='Peppes bodega')
 
         return self._site
 
