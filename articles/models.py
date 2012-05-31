@@ -407,7 +407,7 @@ class Article(models.Model):
             sorted.append((key, links[key]))
 
         return tuple(sorted)
-    links = property(_get_article_links)
+#    links = property(_get_article_links)
 
     def _get_word_count(self):
         """Stupid word counter for an article."""
